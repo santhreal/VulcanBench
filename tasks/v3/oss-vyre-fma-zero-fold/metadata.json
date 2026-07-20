@@ -1,0 +1,34 @@
+{
+  "id": "oss-vyre-fma-zero-fold",
+  "category": "bug_fix",
+  "languages": ["rust"],
+  "difficulty": "medium",
+  "task_complexity": "localized",
+  "created": "2026-07-19",
+  "repo_scale": "micro",
+  "source": "oss",
+  "decontaminated": false,
+  "image": "vulcanbench/sandbox:rust",
+  "base_commit": "0000000000000000000000000000000000000000",
+  "upstream": {
+    "url": "https://github.com/santhsecurity/vyre",
+    "issue": "https://github.com/santhsecurity/vyre/commit/b9989ae53c",
+    "commit": "b9989ae53c9bd0be3643db4ce6806aca882462f5"
+  },
+  "decontamination_notes": "Real bug fix from santhsecurity/vyre commit b9989ae53c, after model training cutoffs. The identity_elim pass in vyre-lower folded Fma(0, x, c) -> c whenever x was a literal zero, with no check on the other factor. 0.0 * inf = NaN, so the fold was unsound. Self-contained 3-file Rust crate (Cargo.toml, src/lib.rs plus gold_patch.diff and issue.md) with zero external dependencies. LICENSE: MIT OR Apache-2.0. Coverage floor: 3 fail_to_pass tests (inf, NaN, -0.0 cases).",
+  "grader": "tests",
+  "tests": {
+    "fail_to_pass": [
+      {"name": "zero_times_inf", "cmd": "cargo test --offline --test vb_fma_zero_fold fma_zero_times_inf_must_not_fold"},
+      {"name": "zero_times_nan", "cmd": "cargo test --offline --test vb_fma_zero_fold fma_zero_times_nan_must_not_fold"},
+      {"name": "neg_zero_times_inf", "cmd": "cargo test --offline --test vb_fma_zero_fold fma_neg_zero_times_inf_must_not_fold"}
+    ],
+    "pass_to_pass": [
+      {"name": "zero_times_finite_folds", "cmd": "cargo test --offline --test vb_regression_fma fma_zero_times_finite_folds_to_addend"},
+      {"name": "finite_times_zero_folds", "cmd": "cargo test --offline --test vb_regression_fma fma_finite_times_zero_folds_to_addend"},
+      {"name": "non_literal_not_folded", "cmd": "cargo test --offline --test vb_regression_fma fma_with_non_literal_factor_not_folded"},
+      {"name": "integer_zero_folds", "cmd": "cargo test --offline --test vb_regression_fma fma_integer_zero_always_folds"}
+    ]
+  },
+  "test_timeout_s": 120
+}

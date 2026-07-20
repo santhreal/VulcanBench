@@ -1,0 +1,31 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -131,22 +131,15 @@ pub fn identity_elim(body: &mut Body) {
+         let a_lit = lit.get(a as usize).copied().flatten();
+         let b_lit = lit.get(b as usize).copied().flatten();
+ 
+-        // ── BUG ──────────────────────────────────────────────
+-        // Only checks whether a factor is zero; DOES NOT check
+-        // whether the OTHER factor is finite.  We need both:
+-        //   (a is zero AND b is finite)  OR  (b is zero AND a is finite)
+         let a_zero = a_lit.is_some_and(Literal::is_numeric_zero);
+         let b_zero = b_lit.is_some_and(Literal::is_numeric_zero);
++        let a_finite = a_lit.is_some_and(Literal::is_finite_numeric);
++        let b_finite = b_lit.is_some_and(Literal::is_finite_numeric);
+ 
+-        // The fix would add finite checks:
+-        // let a_finite = a_lit.is_some_and(Literal::is_finite_numeric);
+-        // let b_finite = b_lit.is_some_and(Literal::is_finite_numeric);
+-        // if (a_zero && b_finite) || (b_zero && a_finite) {
+-        //   ... then fold ...
+-        // }
+-
+-        if a_zero || b_zero {
+-            // BUGGY: Fma(a, zero, c) → c  even when `a` is inf/NaN
++        // fma(0, finite, c) → c  or  fma(finite, 0, c) → c.
++        // BOTH conditions required — with a non-finite other factor the
++        // product is not provably 0 (0.0*inf = 0.0*NaN = NaN).
++        if (a_zero && b_finite) || (b_zero && a_finite) {
+             if let Some(rid) = op.result {
+                 remap[rid as usize] = Some(c);
+             }
