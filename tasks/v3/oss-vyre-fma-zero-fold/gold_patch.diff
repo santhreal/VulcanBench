@@ -1,0 +1,16 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index ffd21ef..386c6bf 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -107,8 +107,10 @@ pub fn identity_elim(body: &mut Body) {
+ 
+         let a_zero = a_lit.is_some_and(Literal::is_numeric_zero);
+         let b_zero = b_lit.is_some_and(Literal::is_numeric_zero);
++        let a_finite = a_lit.is_some_and(Literal::is_finite_numeric);
++        let b_finite = b_lit.is_some_and(Literal::is_finite_numeric);
+ 
+-        if a_zero || b_zero {
++        if (a_zero && b_finite) || (b_zero && a_finite) {
+             if let Some(rid) = op.result {
+                 remap[rid as usize] = Some(c);
+             }
