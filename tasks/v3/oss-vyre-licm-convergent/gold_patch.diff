@@ -1,0 +1,21 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index b94bd9d..ed3c19f 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -16,11 +16,11 @@ pub enum OpKind {
+ pub fn is_pure(kind: &OpKind) -> bool {
+     match kind {
+         OpKind::Arithmetic => true,
+-        OpKind::SubgroupReduce
+-        | OpKind::SubgroupBallot
+-        | OpKind::SubgroupShuffle
+-        | OpKind::SubgroupBroadcast
+-        | OpKind::SubgroupLocalId => true,
++        OpKind::SubgroupReduce => false,
++        OpKind::SubgroupBallot => false,
++        OpKind::SubgroupShuffle => false,
++        OpKind::SubgroupBroadcast => false,
++        OpKind::SubgroupLocalId => true,
+         OpKind::Store => false,
+     }
+ }
