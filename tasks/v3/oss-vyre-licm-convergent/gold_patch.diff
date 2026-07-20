@@ -1,0 +1,35 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 5588e92..9f53ed9 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -25,21 +25,20 @@ pub enum OpKind {
+ 
+ /// Return `true` if an op kind is "pure" (safe to hoist out of a loop).
+ ///
+-/// **BUGGY VERSION**: convergent subgroup collectives return `true`
+-/// even though their result depends on the set of active lanes at the
+-/// program point (which changes when hoisted).
++/// **FIXED VERSION**: convergent subgroup collectives return `false`.
+ pub fn is_pure(kind: &OpKind) -> bool {
+     match kind {
+         // Arithmetic ops: always safe to hoist.
+         OpKind::Arithmetic => true,
+ 
+-        // ── BUG ──────────────────────────────────────────────
+-        // Convergent subgroup collectives classified as pure.
+-        OpKind::SubgroupReduce
+-        | OpKind::SubgroupBallot
+-        | OpKind::SubgroupShuffle
+-        | OpKind::SubgroupBroadcast
+-        | OpKind::SubgroupLocalId => true,
++        // Convergent subgroup collectives: must NOT be hoistable.
++        OpKind::SubgroupReduce => false,
++        OpKind::SubgroupBallot => false,
++        OpKind::SubgroupShuffle => false,
++        OpKind::SubgroupBroadcast => false,
++
++        // Per-lane invariant constant — safe to hoist.
++        OpKind::SubgroupLocalId => true,
+ 
+         // Side-effecting: never hoist.
+         OpKind::Store => false,

@@ -1,0 +1,34 @@
+{
+  "id": "oss-vyre-licm-convergent",
+  "category": "bug_fix",
+  "languages": ["rust"],
+  "difficulty": "medium",
+  "task_complexity": "localized",
+  "created": "2026-07-19",
+  "repo_scale": "micro",
+  "source": "oss",
+  "decontaminated": false,
+  "image": "vulcanbench/sandbox:rust",
+  "base_commit": "0000000000000000000000000000000000000000",
+  "upstream": {
+    "url": "https://github.com/santhsecurity/vyre",
+    "issue": "https://github.com/santhsecurity/vyre/commit/165d952c",
+    "commit": "165d952c2dd80fc300bb9148f4a0e337bc8c1896"
+  },
+  "decontamination_notes": "Real bug fix from santhsecurity/vyre commit 165d952c, after model training cutoffs. The is_pure gate in vyre-lower's LICM pass classified four convergent subgroup collectives as pure (SubgroupReduce, SubgroupBallot, SubgroupShuffle, SubgroupBroadcast), making them eligible for unsafe loop-hoisting. Self-contained 2-file Rust crate with zero external dependencies. LICENSE: MIT OR Apache-2.0. Coverage floor: 4 fail_to_pass tests (each convergent op must return false).",
+  "grader": "tests",
+  "tests": {
+    "fail_to_pass": [
+      {"name": "reduce_not_pure", "cmd": "cargo test --offline --test vb_licm_convergent reduce_is_not_pure"},
+      {"name": "ballot_not_pure", "cmd": "cargo test --offline --test vb_licm_convergent ballot_is_not_pure"},
+      {"name": "shuffle_not_pure", "cmd": "cargo test --offline --test vb_licm_convergent shuffle_is_not_pure"},
+      {"name": "broadcast_not_pure", "cmd": "cargo test --offline --test vb_licm_convergent broadcast_is_not_pure"}
+    ],
+    "pass_to_pass": [
+      {"name": "arith_is_pure", "cmd": "cargo test --offline --test vb_regression_licm arithmetic_is_pure"},
+      {"name": "local_id_is_pure", "cmd": "cargo test --offline --test vb_regression_licm local_id_is_pure"},
+      {"name": "store_not_pure", "cmd": "cargo test --offline --test vb_regression_licm store_is_not_pure"}
+    ]
+  },
+  "test_timeout_s": 120
+}
