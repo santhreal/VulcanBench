@@ -1,0 +1,57 @@
+{
+  "id": "oss-vyre-loop-fusion-cas",
+  "category": "bug_fix",
+  "languages": [
+    "rust"
+  ],
+  "difficulty": "medium",
+  "task_complexity": "localized",
+  "created": "2026-07-19",
+  "repo_scale": "micro",
+  "source": "oss",
+  "decontaminated": false,
+  "image": "vulcanbench/sandbox:rust",
+  "base_commit": "c97e4049d1493604c348dab37a80cdba96297d0c",
+  "upstream": {
+    "url": "https://github.com/santhsecurity/vyre",
+    "issue": "https://github.com/santhsecurity/vyre/commit/0685fea4073775d582dcfb1d73fa4d34be4ad1f4",
+    "commit": "0685fea4073775d582dcfb1d73fa4d34be4ad1f4"
+  },
+  "decontamination_notes": "Real bug fix from santhsecurity/vyre commit 0685fea4 (2026-06-23), after model training cutoffs. The collect_vars_in_expr function in vyre-foundation's loop_fusion pass collected index and value from Expr::Atomic but not the expected operand of a compare-exchange, letting a cross-loop scalar read go undetected. Self-contained micro crate distilled from that analysis for offline grading. LICENSE-MIT and LICENSE-APACHE preserved from upstream. Coverage floor: 3 fail_to_pass tests (CAS expected creates dependency; expected distinct from value; nested expected expression).",
+  "grader": "tests",
+  "tests": {
+    "fail_to_pass": [
+      {
+        "name": "cas_expected_creates_dep",
+        "cmd": "cargo test --offline --test vb_loop_fusion_cas cas_expected_creates_scalar_dependency"
+      },
+      {
+        "name": "cas_expected_separate_from_value",
+        "cmd": "cargo test --offline --test vb_loop_fusion_cas cas_expected_is_separate_from_value_operand"
+      },
+      {
+        "name": "cas_expected_nested_expr_creates_dep",
+        "cmd": "cargo test --offline --test vb_loop_fusion_cas cas_expected_nested_expr_creates_dep"
+      }
+    ],
+    "pass_to_pass": [
+      {
+        "name": "plain_var_dep_detected",
+        "cmd": "cargo test --offline --test vb_regression_cas non_atomic_scalar_dep_still_detected"
+      },
+      {
+        "name": "disjoint_no_dep",
+        "cmd": "cargo test --offline --test vb_regression_cas no_dep_on_disjoint_scalars"
+      },
+      {
+        "name": "cas_no_false_positive",
+        "cmd": "cargo test --offline --test vb_regression_cas cas_without_expected_var_must_not_false_positive"
+      },
+      {
+        "name": "dep_swapped_direction",
+        "cmd": "cargo test --offline --test vb_loop_fusion_cas cas_expected_creates_dep_swapped_loops"
+      }
+    ]
+  },
+  "test_timeout_s": 120
+}

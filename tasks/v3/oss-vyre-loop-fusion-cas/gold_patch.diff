@@ -1,0 +1,17 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 8dc476b..2d962f8 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -48,10 +48,11 @@ pub fn collect_vars_in_expr(expr: &Expr, out: &mut HashSet<Ident>) {
+         }
+         Expr::Atomic {
+             index,
+-            expected: _,
++            expected,
+             value,
+         } => {
+             collect_vars_in_expr(index, out);
++            collect_vars_in_expr(expected, out);
+             collect_vars_in_expr(value, out);
+         }
+     }
