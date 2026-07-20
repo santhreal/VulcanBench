@@ -1,0 +1,34 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index c7dea20..87035c6 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -53,13 +53,11 @@ pub struct LoopBody {
+     pub stmts: Vec<Stmt>,
+ }
+ 
+-// --------------------------------------------------------------------
+-// BUGGY: `collect_vars_in_expr` — missing `expected` in Atomic
+-// --------------------------------------------------------------------
+ 
+ /// Collect all variables referenced by an expression.
+ ///
+-/// **BUGGY VERSION**: the `Expr::Atomic` arm collects `index` and `value`
++/// **FIXED VERSION**: also collects `expected` from `Expr::Atomic`,
++/// and the match is exhaustive (no `_` catch-all).
+ /// but NOT `expected`. Since `expected` is a scalar read of a variable,
+ /// this omission lets the dependency analysis miss cross-loop scalar reads.
+ pub fn collect_vars_in_expr(expr: &Expr, out: &mut HashSet<Ident>) {
+@@ -74,11 +72,11 @@ pub fn collect_vars_in_expr(expr: &Expr, out: &mut HashSet<Ident>) {
+         }
+         Expr::Atomic {
+             index,
+-            expected: _, // BUG: expected is NOT collected!
++            expected,
+             value,
+         } => {
+             collect_vars_in_expr(index, out);
+-            // BUG: missing: collect_vars_in_expr(expected, out);
++            collect_vars_in_expr(expected, out); // FIX: was missing!
+             collect_vars_in_expr(value, out);
+         }
+         // Note: the catch-all `_ => {}` variant is also a latent bug pattern
